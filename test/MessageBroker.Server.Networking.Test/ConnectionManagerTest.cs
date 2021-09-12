@@ -8,12 +8,12 @@ namespace MessageBroker.Server.Networking.Test
 {
     public class ConnectionManagerTest
     {
-        private IConnectionManager connectionManager;
+        private IConnectionManager _connectionManager;
 
         [SetUp]
         public void Setup()
         {
-            connectionManager = new ConnectionManager();
+            _connectionManager = new ConnectionManager();
         }
 
         [Test]
@@ -22,8 +22,8 @@ namespace MessageBroker.Server.Networking.Test
             var socketMock = new Mock<WebSocket>();
             var guid = Guid.NewGuid().ToString();
 
-            connectionManager.AddSocket(guid, socketMock.Object);
-            connectionManager.RemoveSocket(guid);
+            _connectionManager.AddSocket(guid, socketMock.Object);
+            _connectionManager.RemoveSocket(guid);
 
             socketMock.Verify(s
                 => s.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closed by the ConnectionManager", CancellationToken.None)
@@ -36,9 +36,9 @@ namespace MessageBroker.Server.Networking.Test
             var socketMock = new Mock<WebSocket>();
             var guid = Guid.NewGuid().ToString();
 
-            connectionManager.AddSocket(guid, socketMock.Object);
+            _connectionManager.AddSocket(guid, socketMock.Object);
 
-            Assert.IsTrue(connectionManager.GetId(socketMock.Object) == guid);
+            Assert.IsTrue(_connectionManager.GetId(socketMock.Object) == guid);
         }
     }
 }

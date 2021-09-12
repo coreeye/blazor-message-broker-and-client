@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Threading.Tasks;
 
 namespace MessageBroker.Server
 {
@@ -21,6 +22,9 @@ namespace MessageBroker.Server
             services.AddTransient<IConnectionManager, ConnectionManager>();
             services.AddTransient<BrokerServer>();
             services.AddTransient<IWebSocketHandler, BrokerServer>();
+            services.AddSingleton<IModelSerialization, ModelSerialization>();
+
+            services.AddRazorPages();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -47,6 +51,12 @@ namespace MessageBroker.Server
 
             app.UseDefaultFiles();
             app.UseStaticFiles();
+            app.UseRouting();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapFallbackToPage("/index.html");
+            });
         }
     }
 }

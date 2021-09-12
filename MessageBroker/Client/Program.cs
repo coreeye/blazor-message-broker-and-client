@@ -1,5 +1,5 @@
+using MessageBroker.Server.Networking;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Net.Http;
@@ -18,6 +18,7 @@ namespace MessageBroker.Client
             builder.Services.AddScoped<IBrokerClient, BrokerClient>();
 
             builder.Services.AddSingleton<IAppConfig, AppConfig>();
+            builder.Services.AddSingleton<IModelSerialization, ModelSerialization>();
 
             await builder.Build().RunAsync();
         }

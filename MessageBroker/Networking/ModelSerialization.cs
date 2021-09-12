@@ -1,11 +1,11 @@
-﻿
+﻿using MessageBroker.Shared;
 using Newtonsoft.Json;
 
-namespace MessageBroker.Shared
+namespace MessageBroker.Server.Networking
 {
-    public static class ModelExtensions
+    public class ModelSerialization : IModelSerialization
     {
-        public static TModel DeserializeModel<TModel>(this string modelString)
+        public TModel DeserializeModel<TModel>(string modelString)
             where TModel : ModelBase
         {
             return JsonConvert.DeserializeObject<TModel>(modelString, new JsonSerializerSettings

@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageBroker.Server", "Mes
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageBroker.Shared", "MessageBroker\Shared\MessageBroker.Shared.csproj", "{727E0421-D9F8-4434-9C82-973ED4FC4608}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageBroker.Server.Networking.Test", "test\MessageBroker.Server.Networking.Test\MessageBroker.Server.Networking.Test.csproj", "{3666543E-6F5A-45D2-9653-0611F7206471}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageBroker.Server.Networking.Test", "test\MessageBroker.Server.Networking.Test\MessageBroker.Server.Networking.Test.csproj", "{3666543E-6F5A-45D2-9653-0611F7206471}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageBroker.Server.Test", "test\MessageBroker.Server.Test\MessageBroker.Server.Test.csproj", "{0056EBB1-3E85-4456-9316-1DB7D583E8B8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{3666543E-6F5A-45D2-9653-0611F7206471}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3666543E-6F5A-45D2-9653-0611F7206471}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3666543E-6F5A-45D2-9653-0611F7206471}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0056EBB1-3E85-4456-9316-1DB7D583E8B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0056EBB1-3E85-4456-9316-1DB7D583E8B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0056EBB1-3E85-4456-9316-1DB7D583E8B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0056EBB1-3E85-4456-9316-1DB7D583E8B8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

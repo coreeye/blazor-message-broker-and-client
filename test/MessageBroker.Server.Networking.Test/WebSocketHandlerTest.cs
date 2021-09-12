@@ -3,7 +3,6 @@ using Moq;
 using NUnit.Framework;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,14 +11,14 @@ namespace MessageBroker.Server.Networking.Test
 {
     public class WebSocketHandlerTest
     {
-        private Mock<IConnectionManager> connectionManager;
-        private WebSocketHandler webSocketHandler;
+        private Mock<IConnectionManager> _connectionManager;
+        private WebSocketHandler _webSocketHandler;
 
         [SetUp]
         public void Setup()
         {
-            connectionManager = new Mock<IConnectionManager>();
-            webSocketHandler = new TestWebSocketHandlerDelegate(connectionManager.Object);
+            _connectionManager = new Mock<IConnectionManager>();
+            _webSocketHandler = new TestWebSocketHandlerDelegate(_connectionManager.Object);
         }
 
         [Test]
@@ -39,9 +38,9 @@ namespace MessageBroker.Server.Networking.Test
             socketInfos.TryAdd("1", socket1Mock.Object);
             socketInfos.TryAdd("2", socket2Mock.Object);
 
-            connectionManager.Setup(c => c.GetAll()).Returns(socketInfos);
+            _connectionManager.Setup(c => c.GetAll()).Returns(socketInfos);
 
-            await webSocketHandler.SendMessageToAllAsync(response.Object);
+            await _webSocketHandler.SendMessageToAllAsync(response.Object);
 
             socket1Mock.Verify(s
                 => s.SendAsync(It.IsAny<ArraySegment<byte>>(), WebSocketMessageType.Text, true, CancellationToken.None)

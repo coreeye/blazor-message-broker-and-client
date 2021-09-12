@@ -1,4 +1,5 @@
-﻿using MessageBroker.Shared;
+﻿using MessageBroker.Server.Networking;
+using MessageBroker.Shared;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -19,14 +20,17 @@ namespace MessageBroker.Client
 
         public ClientWebSocket WebSocket { get; private set; }
 
-        private CancellationTokenSource disposalTokenSource = new CancellationTokenSource();
+        private CancellationTokenSource _disposalTokenSource = new CancellationTokenSource();
 
         private Action<string> _logCallback;
 
-        public BrokerClient() : base()
+        private readonly IModelSerialization _serialization;
+
+        public BrokerClient(IModelSerialization serialization) : base()
         {
             WebSocket = new ClientWebSocket();
             TopicCache = new List<NameIdPair>();
+            _serialization = serialization;
         }
 
         public async void Connect(Uri uri, Action onConnectCallback = null, Action<string> logCallback = null)
@@ -35,7 +39,7 @@ namespace MessageBroker.Client
             {
                 _logCallback = logCallback;
                 WebSocket = new ClientWebSocket();
-                await WebSocket.ConnectAsync(uri, disposalTokenSource.Token);
+                await WebSocket.ConnectAsync(uri, _disposalTokenSource.Token);
                 onConnectCallback?.Invoke();
                 _ = ReceiveLoop();
             }
@@ -49,15 +53,15 @@ namespace MessageBroker.Client
         private async Task ReceiveLoop()
         {
             var buffer = new ArraySegment<byte>(new byte[1024]);
-            while (!disposalTokenSource.IsCancellationRequested)
+            while (!_disposalTokenSource.IsCancellationRequested)
             {
                 // Note that the received block might only be part of a larger message. If this applies in your scenario,
                 // check the received.EndOfMessage and consider buffering the blocks until that property is true.
                 // Or use a higher-level library such as SignalR.
-                var received = await WebSocket.ReceiveAsync(buffer, disposalTokenSource.Token);
+                var received = await WebSocket.ReceiveAsync(buffer, _disposalTokenSource.Token);
                 var message = Encoding.UTF8.GetString(buffer.Array, 0, received.Count);
 
-                var response = message.DeserializeModel<Response>();
+                var response = _serialization.DeserializeModel<Response>(message);
                 ProcessResponse(response);
             }
         }
@@ -131,7 +135,7 @@ namespace MessageBroker.Client
             var request = new CreateTopicRequest(topicName);
             var buffer = SerializeRequest(request);
 
-            await WebSocket.SendAsync(buffer, WebSocketMessageType.Text, true, disposalTokenSource.Token);
+            await WebSocket.SendAsync(buffer, WebSocketMessageType.Text, true, _disposalTokenSource.Token);
         }
 
         public async void MakeSubscriptionRequest(string topicName)
@@ -139,7 +143,7 @@ namespace MessageBroker.Client
             var request = new SubscribeRequest(topicName);
             var buffer = SerializeRequest(request);
 
-            await WebSocket.SendAsync(buffer, WebSocketMessageType.Text, true, disposalTokenSource.Token);
+            await WebSocket.SendAsync(buffer, WebSocketMessageType.Text, true, _disposalTokenSource.Token);
         }
 
         public async void MakeUnsubscriptionRequest(string topicName)
@@ -147,7 +151,7 @@ namespace MessageBroker.Client
             var request = new UnsubscribeRequest(topicName);
             var buffer = SerializeRequest(request);
 
-            await WebSocket.SendAsync(buffer, WebSocketMessageType.Text, true, disposalTokenSource.Token);
+            await WebSocket.SendAsync(buffer, WebSocketMessageType.Text, true, _disposalTokenSource.Token);
         }
 
         public async void MakeListTopicsRequest()
@@ -155,7 +159,7 @@ namespace MessageBroker.Client
             var request = new ListTopicsRequest();
             var buffer = SerializeRequest(request);
 
-            await WebSocket.SendAsync(buffer, WebSocketMessageType.Text, true, disposalTokenSource.Token);
+            await WebSocket.SendAsync(buffer, WebSocketMessageType.Text, true, _disposalTokenSource.Token);
         }
 
         public async void MakePublishRequest(string messageContent)
@@ -163,7 +167,7 @@ namespace MessageBroker.Client
             var request = new PublishRequest(messageContent);
             var buffer = SerializeRequest(request);
 
-            await WebSocket.SendAsync(buffer, WebSocketMessageType.Text, true, disposalTokenSource.Token);
+            await WebSocket.SendAsync(buffer, WebSocketMessageType.Text, true, _disposalTokenSource.Token);
         }
 
         private static ArraySegment<byte> SerializeRequest(Request request)
@@ -180,7 +184,7 @@ namespace MessageBroker.Client
 
         public void Dispose()
         {
-            disposalTokenSource.Cancel();
+            _disposalTokenSource.Cancel();
             _ = WebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Bye", CancellationToken.None);
         }
     }
