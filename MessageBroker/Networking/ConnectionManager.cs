@@ -19,8 +19,8 @@ namespace MessageBroker.Server.Networking
         public string GetId(WebSocket socket)
             => _sockets.FirstOrDefault(p => p.Value == socket).Key;
 
-        public void AddSocket(WebSocket socket)
-            => _sockets.TryAdd(CreateConnectionId(), socket);
+        public void AddSocket(string id, WebSocket socket)
+            => _sockets.TryAdd(id, socket);
 
         public async Task RemoveSocket(string id)
         {
@@ -30,7 +30,5 @@ namespace MessageBroker.Server.Networking
                                     statusDescription: "Closed by the ConnectionManager", 
                                     cancellationToken: CancellationToken.None);
         }
-
-        private string CreateConnectionId() => Guid.NewGuid().ToString();
     }
 }

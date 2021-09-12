@@ -1,4 +1,5 @@
 using MessageBroker.Shared;
+using System;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,7 +17,7 @@ namespace MessageBroker.Server.Networking
 
         public virtual async Task OnConnected(WebSocket socket)
         {
-            WebSocketConnectionManager.AddSocket(socket);
+            WebSocketConnectionManager.AddSocket(Guid.NewGuid().ToString(), socket);
         }
 
         public virtual async Task OnDisconnected(WebSocket socket)

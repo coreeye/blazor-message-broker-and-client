@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
 
@@ -12,7 +13,7 @@ namespace MessageBroker.Server.Networking
 
         string GetId(WebSocket socket);
 
-        void AddSocket(WebSocket socket);
+        void AddSocket(string id, WebSocket socket);
 
         Task RemoveSocket(string id);
     }
