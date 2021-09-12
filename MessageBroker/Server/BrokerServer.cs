@@ -21,7 +21,8 @@ namespace MessageBroker.Server
 
         private readonly IModelSerialization _serialization;
 
-        public BrokerServer(IConnectionManager webSocketConnectionManager, IModelSerialization serialization) : base(webSocketConnectionManager)
+        public BrokerServer(IConnectionManager webSocketConnectionManager, IModelSerialization serialization)
+            : base(webSocketConnectionManager, serialization)
         {
             _topics = new ConcurrentDictionary<Guid, Topic>();
             _responseQueues = new ConcurrentDictionary<Guid, ConcurrentQueue<Response>>();

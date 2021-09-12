@@ -8,11 +8,14 @@ namespace MessageBroker.Server.Networking
 {
     public abstract class WebSocketHandler : IWebSocketHandler
     {
+        private readonly IModelSerialization _modelSerialization;
+
         protected IConnectionManager WebSocketConnectionManager { get; set; }
 
-        public WebSocketHandler(IConnectionManager webSocketConnectionManager)
+        public WebSocketHandler(IConnectionManager webSocketConnectionManager, IModelSerialization modelSerialization)
         {
             WebSocketConnectionManager = webSocketConnectionManager;
+            _modelSerialization = modelSerialization;
         }
 
         public virtual async Task OnConnected(WebSocket socket)
@@ -30,11 +33,11 @@ namespace MessageBroker.Server.Networking
             if(socket.State != WebSocketState.Open)
                 return;
 
-            var buffer = response.SerializeModel();
+            var buffer = _modelSerialization.SerializeModel(response);
             await socket.SendAsync(buffer,
                                    WebSocketMessageType.Text,
                                    true,
-                                   cancellationToken: CancellationToken.None);          
+                                   CancellationToken.None);          
         }
 
         public async Task SendMessageAsync(string socketId, Response response)

@@ -12,21 +12,21 @@ namespace MessageBroker.Server.Networking.Test
     public class WebSocketHandlerTest
     {
         private Mock<IConnectionManager> _connectionManager;
+        private Mock<IModelSerialization> _modelSerialization;
         private WebSocketHandler _webSocketHandler;
 
         [SetUp]
         public void Setup()
         {
             _connectionManager = new Mock<IConnectionManager>();
-            _webSocketHandler = new TestWebSocketHandlerDelegate(_connectionManager.Object);
+            _modelSerialization = new Mock<IModelSerialization>();
+            _webSocketHandler = new TestWebSocketHandlerDelegate(_connectionManager.Object, _modelSerialization.Object);
         }
 
         [Test]
         public async Task ShouldSendMessageToAllSockets()
         {
             var response = new Mock<Response>();
-            response.Setup(c => c.SerializeModel()).Returns(new ArraySegment<byte>());
-
             var socketInfos = new ConcurrentDictionary<string, WebSocket>();
 
             var socket1Mock = new Mock<WebSocket>();
@@ -54,8 +54,8 @@ namespace MessageBroker.Server.Networking.Test
 
     class TestWebSocketHandlerDelegate : WebSocketHandler
     {
-        public TestWebSocketHandlerDelegate(IConnectionManager webSocketConnectionManager)
-            : base(webSocketConnectionManager)
+        public TestWebSocketHandlerDelegate(IConnectionManager webSocketConnectionManager, IModelSerialization modelSerialization)
+            : base(webSocketConnectionManager, modelSerialization)
         {
 
         }
