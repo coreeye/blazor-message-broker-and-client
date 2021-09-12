@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Net.WebSockets;
-using System.Threading;
 
 namespace MessageBroker.Client
 {

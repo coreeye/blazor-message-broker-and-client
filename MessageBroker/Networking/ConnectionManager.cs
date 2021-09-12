@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace MessageBroker.Server.Networking
 {
-    public class ConnectionManager
+    public class ConnectionManager : IConnectionManager
     {
         private ConcurrentDictionary<string, WebSocket> _sockets = new ConcurrentDictionary<string, WebSocket>();
 

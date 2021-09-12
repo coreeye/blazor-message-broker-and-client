@@ -4,7 +4,7 @@
 @using System.Threading
 @using Newtonsoft.Json;
 @using MessageBroker.Shared
-@inject IBrokerClient brokerClient
+@inject IAppConfig appConfig
 
 <div class="container">
     Welcome to Message Broker Client.<br />
@@ -68,7 +68,7 @@
 
     private void ConnectBtn_Clicked()
     {
-        _client.Connect(new Uri("wss://localhost:5001/ws"), OnConnect, WriteLog);
+        _client.Connect(appConfig.BrokerAddress, OnConnect, WriteLog);
         ClientStatus = _client.WebSocket.State.ToString();
         StateHasChanged();
     }

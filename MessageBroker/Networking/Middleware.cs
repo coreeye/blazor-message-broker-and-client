@@ -10,10 +10,10 @@ namespace MessageBroker.Server.Networking
     {
         private readonly RequestDelegate _next;
 
-        private WebSocketHandler _webSocketHandler { get; set; }
+        private IWebSocketHandler _webSocketHandler { get; set; }
 
-        public WebSocketManagerMiddleware(RequestDelegate next, 
-                                          WebSocketHandler webSocketHandler)
+        public WebSocketManagerMiddleware(RequestDelegate next,
+                                          IWebSocketHandler webSocketHandler)
         {
             _next = next;
             _webSocketHandler = webSocketHandler;

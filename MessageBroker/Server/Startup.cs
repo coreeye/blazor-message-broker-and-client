@@ -18,8 +18,9 @@ namespace MessageBroker.Server
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<ConnectionManager>();
-            services.AddSingleton<BrokerServer>();
+            services.AddTransient<IConnectionManager, ConnectionManager>();
+            services.AddTransient<BrokerServer>();
+            services.AddTransient<IWebSocketHandler, BrokerServer>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

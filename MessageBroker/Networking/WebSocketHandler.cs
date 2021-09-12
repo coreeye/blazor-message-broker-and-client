@@ -1,17 +1,15 @@
 using MessageBroker.Shared;
-using Newtonsoft.Json;
-using System;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace MessageBroker.Server.Networking
 {
-    public abstract class WebSocketHandler
+    public abstract class WebSocketHandler : IWebSocketHandler
     {
-        protected ConnectionManager WebSocketConnectionManager { get; set; }
+        protected IConnectionManager WebSocketConnectionManager { get; set; }
 
-        public WebSocketHandler(ConnectionManager webSocketConnectionManager)
+        public WebSocketHandler(IConnectionManager webSocketConnectionManager)
         {
             WebSocketConnectionManager = webSocketConnectionManager;
         }

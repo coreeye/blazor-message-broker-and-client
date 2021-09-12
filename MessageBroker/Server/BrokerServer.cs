@@ -13,13 +13,13 @@ namespace MessageBroker.Server
     /// <summary>
     /// Specialized server class to act as a message broker in a publish-subscribe system
     /// </summary>
-    public class BrokerServer : WebSocketHandler, IBrokerServer
+    public class BrokerServer : WebSocketHandler
     {
         protected ConcurrentDictionary<Guid, Topic> _topics;
 
         protected ConcurrentDictionary<Guid, ConcurrentQueue<Response>> _responseQueues;
 
-        public BrokerServer(ConnectionManager webSocketConnectionManager) : base(webSocketConnectionManager)
+        public BrokerServer(IConnectionManager webSocketConnectionManager) : base(webSocketConnectionManager)
         {
             _topics = new ConcurrentDictionary<Guid, Topic>();
             _responseQueues = new ConcurrentDictionary<Guid, ConcurrentQueue<Response>>();
