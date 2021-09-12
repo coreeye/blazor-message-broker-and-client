@@ -3,12 +3,9 @@ using System.Collections.Generic;
 
 namespace MessageBroker.Shared
 {
-    public enum ResponseType { INFO, NEW_MESSAGE, TOPIC_CREATED, LIST_TOPICS, SUBSCRIBED, UNSUBSCRIBED }
-
     [Serializable]
-    public class Response
+    public class Response : ModelBase
     {
-        public ResponseType Type { get; set; }
     }
 
     [Serializable]
@@ -18,7 +15,6 @@ namespace MessageBroker.Shared
 
         public InfoResponse(string text)
         {
-            Type = ResponseType.INFO;
             Text = text;
         }
     }
@@ -26,11 +22,10 @@ namespace MessageBroker.Shared
     [Serializable]
     public class SubscribedResponse : Response
     {
-        public List<NameIdPair> Subscriptions { get; set; }
+        public NameIdPair[] Subscriptions { get; set; }
 
-        public SubscribedResponse(List<NameIdPair> subscriptions)
+        public SubscribedResponse(NameIdPair[] subscriptions)
         {
-            Type = ResponseType.SUBSCRIBED;
             Subscriptions = subscriptions;
         }
     }
@@ -38,23 +33,21 @@ namespace MessageBroker.Shared
     [Serializable]
     public class UnSubscribedResponse : Response
     {
-        public List<NameIdPair> Subscriptions { get; set; }
+        public NameIdPair[] Subscriptions { get; set; }
 
-        public UnSubscribedResponse(List<NameIdPair> subscriptions)
+        public UnSubscribedResponse(NameIdPair[] subscriptions)
         {
-            Type = ResponseType.UNSUBSCRIBED;
             Subscriptions = subscriptions;
         }
     }
 
     [Serializable]
-    public class NewMessageResponse<T> : Response
+    public class NewMessageResponse : Response
     {
-        public Message<T> Message { get; set; }
+        public string Message { get; set; }
 
-        public NewMessageResponse(Message<T> message)
+        public NewMessageResponse(string message)
         {
-            Type = ResponseType.NEW_MESSAGE;
             Message = message;
         }
     }
@@ -66,7 +59,6 @@ namespace MessageBroker.Shared
 
         public TopicCreatedResponse(NameIdPair topicInfo)
         {
-            Type = ResponseType.TOPIC_CREATED;
             TopicInfo = topicInfo;
         }
     }
@@ -74,11 +66,10 @@ namespace MessageBroker.Shared
     [Serializable]
     public class ListTopicsResponse : Response
     {
-        public List<NameIdPair> Topics { get; set; }
+        public NameIdPair[] Topics { get; set; }
 
-        public ListTopicsResponse(List<NameIdPair> topicList)
+        public ListTopicsResponse(NameIdPair[] topicList)
         {
-            Type = ResponseType.LIST_TOPICS;
             Topics = topicList;
         }
     }

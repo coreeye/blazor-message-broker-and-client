@@ -2,11 +2,10 @@ using MessageBroker.Shared;
 using Newtonsoft.Json;
 using System;
 using System.Net.WebSockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MessageBroker.Networking
+namespace MessageBroker.Server.Networking
 {
     public abstract class WebSocketHandler
     {
@@ -32,7 +31,7 @@ namespace MessageBroker.Networking
             if(socket.State != WebSocketState.Open)
                 return;
 
-            var buffer = SerializeResponse(response);
+            var buffer = response.SerializeModel();
             await socket.SendAsync(buffer,
                                    WebSocketMessageType.Text,
                                    true,
@@ -53,19 +52,6 @@ namespace MessageBroker.Networking
             }
         }
 
-        private static ArraySegment<byte> SerializeResponse(Response response)
-        {
-            var data = JsonConvert.SerializeObject(response, Formatting.Indented, new JsonSerializerSettings
-            {
-                TypeNameHandling = TypeNameHandling.All
-            });
-
-            var encoded = Encoding.UTF8.GetBytes(data);
-            var buffer = new ArraySegment<byte>(encoded, 0, encoded.Length);
-            return buffer;
-        }
-
-        //TODO - decide if exposing the message string is better than exposing the result and buffer
         public abstract Task ReceiveAsync(WebSocket socket, WebSocketReceiveResult result, byte[] buffer);
     }
 }

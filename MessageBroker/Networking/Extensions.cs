@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace MessageBroker.Networking
+namespace MessageBroker.Server.Networking
 {
     public static class WebSocketManagerExtensions
     {

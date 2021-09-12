@@ -1,6 +1,5 @@
-﻿using MessageBroker.Networking;
+﻿using MessageBroker.Server.Networking;
 using MessageBroker.Shared;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -35,11 +34,7 @@ namespace MessageBroker.Server
         {
             var socketId = WebSocketConnectionManager.GetId(socket);
             var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
-
-            var request = JsonConvert.DeserializeObject<Request>(message, new JsonSerializerSettings
-            {
-                TypeNameHandling = TypeNameHandling.Auto
-            });
+            var request = message.DeserializeModel<Request>();
 
             var response = ProcessRequest(request, socketId);
             await SendMessageAsync(socket, response);
@@ -49,57 +44,63 @@ namespace MessageBroker.Server
         {
             Response response = new InfoResponse("Error: Unknown request");
 
-            switch (request.Type)
+            switch (request)
             {
-                case RequestType.CREATE_TOPIC:
+                case CreateTopicRequest createTopicRequest:
                     {
-                        string topicName = (request as CreateTopicRequest).TopicName;
-                        if(string.IsNullOrEmpty(topicName) == false)
+                        string topicName = createTopicRequest.TopicName;
+                        if(string.IsNullOrEmpty(topicName))
+                        {
+                            response = new InfoResponse("Topic name cannot be null or empty");
+                        }
+                        else if(_topics.FirstOrDefault(s => s.Value.Info.Name.Equals(topicName))
+                                .Equals(default(KeyValuePair<Guid, Topic>)) == false)
+                        {
+                            response = new InfoResponse("A topic with the same name exists already");
+                        }
+                        else
                         {
                             var topicInfo = CreateTopic(topicName);
                             Console.WriteLine($"Creating topic: {topicInfo.Name}");
                             response = new TopicCreatedResponse(topicInfo);
                         }
-                        else
-                        {
-                            response = new InfoResponse("Topic name cannot be null or empty");
-                        }
                         break;
                     }
 
-                case RequestType.LIST_TOPICS:
-                    response = new ListTopicsResponse(GetClientTopicList());
+                case ListTopicsRequest listTopicsRequest:
+                    response = new ListTopicsResponse(GetClientTopicList().ToArray());
                     break;
-                case RequestType.PUBLISH:
+                case PublishRequest publishRequest:
                     {
-                        var message = (request as PublishRequest<string>).Message;
+                        var message = publishRequest.Message;
 
-                        if (string.IsNullOrEmpty(message.Content) == false && PublishMessage(message, socketId))
+                        if (string.IsNullOrEmpty(message) == false
+                            && PublishMessage(message, socketId))
+                        {
                             response = new InfoResponse("Message published to topics");
+                        }
                         else
                             response = new InfoResponse("Message could not be published");
                         break;
                     }
 
-                case RequestType.SUBSCRIBE:
-                    var subscribeRequest = request as SubscribeRequest;
+                case SubscribeRequest subscribeRequest:
                     Console.WriteLine($"{socketId} wants to subscribe to \"{subscribeRequest.TopicName}\"");
 
                     if (Subscribe(subscribeRequest, socketId))
                     {
-                        var topicsInfo = GetAllSubscriptions(socketId).Select(s => s.Info).ToList();
+                        var topicsInfo = GetAllSubscriptions(socketId).Select(s => s.Info).ToArray();
                         response = new SubscribedResponse(topicsInfo);
                     }
                     else
                         response = new InfoResponse("Unable to add subscription (Topic does not exist)");
                     break;
-                case RequestType.UNSUBSCRIBE:
-                    var unsubscribeRequest = request as UnsubscribeRequest;
+                case UnsubscribeRequest unsubscribeRequest:
                     Console.WriteLine($"{socketId} wants to unsubscribe from \"{unsubscribeRequest.TopicName}\"");
 
                     if (Unsubscribe(unsubscribeRequest, socketId))
                     {
-                        var topicsInfo = GetAllSubscriptions(socketId).Select(s => s.Info).ToList();
+                        var topicsInfo = GetAllSubscriptions(socketId).Select(s => s.Info).ToArray();
                         response = new UnSubscribedResponse(topicsInfo);
                     }
                     else
@@ -118,7 +119,7 @@ namespace MessageBroker.Server
             return topicInfo;
         }
 
-        protected bool PublishMessage<T>(Message<T> message, string socketId)
+        protected bool PublishMessage(string message, string socketId)
         {
             var topics = GetAllSubscriptions(socketId);
 
@@ -126,7 +127,7 @@ namespace MessageBroker.Server
             {
                 foreach (string subscriberId in topic.Subscribers)
                 {
-                    SendMessageAsync(subscriberId, new NewMessageResponse<T>(message));
+                    SendMessageAsync(subscriberId, new NewMessageResponse(message));
                 }
 
                 return true;

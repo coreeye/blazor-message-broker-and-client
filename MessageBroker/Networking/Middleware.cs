@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
-namespace MessageBroker.Networking
+namespace MessageBroker.Server.Networking
 {
     public class WebSocketManagerMiddleware
     {
@@ -22,7 +22,9 @@ namespace MessageBroker.Networking
         public async Task Invoke(HttpContext context)
         {
             if(!context.WebSockets.IsWebSocketRequest)
+            {
                 return;
+            }
             
             var socket = await context.WebSockets.AcceptWebSocketAsync();
             await _webSocketHandler.OnConnected(socket);
@@ -40,11 +42,7 @@ namespace MessageBroker.Networking
                     await _webSocketHandler.OnDisconnected(socket);
                     return;
                 }
-
             });
-            
-            //TODO - investigate the Kestrel exception thrown when this is the last middleware
-            //await _next.Invoke(context);
         }
 
         private async Task Receive(WebSocket socket, Action<WebSocketReceiveResult, byte[]> handleMessage)

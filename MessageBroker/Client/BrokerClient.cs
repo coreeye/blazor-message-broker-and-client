@@ -20,15 +20,13 @@ namespace MessageBroker.Client
 
         public ClientWebSocket WebSocket { get; private set; }
 
-        private ConcurrentQueue<Request> pendingRequests;
+        private CancellationTokenSource disposalTokenSource = new CancellationTokenSource();
 
-        CancellationTokenSource disposalTokenSource = new CancellationTokenSource();
-        Action<string> _logCallback;
+        private Action<string> _logCallback;
 
         public BrokerClient() : base()
         {
             WebSocket = new ClientWebSocket();
-            pendingRequests = new ConcurrentQueue<Request>();
             TopicCache = new List<NameIdPair>();
         }
 
@@ -42,10 +40,10 @@ namespace MessageBroker.Client
                 onConnectCallback?.Invoke();
                 _ = ReceiveLoop();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 onConnectCallback?.Invoke();
-                _logCallback("Could not connect.");
+                _logCallback?.Invoke("Could not connect.");
             }
         }
 
@@ -58,32 +56,29 @@ namespace MessageBroker.Client
                 // check the received.EndOfMessage and consider buffering the blocks until that property is true.
                 // Or use a higher-level library such as SignalR.
                 var received = await WebSocket.ReceiveAsync(buffer, disposalTokenSource.Token);
-                var receivedAsText = Encoding.UTF8.GetString(buffer.Array, 0, received.Count);
-                _logCallback?.Invoke($"Received: {receivedAsText}\n");
+                var message = Encoding.UTF8.GetString(buffer.Array, 0, received.Count);
+
+                var response = message.DeserializeModel<Response>();
+                ProcessResponse(response);
             }
         }
 
         protected void ProcessResponse(Response response)
         {
             // Handle responses to previous client requests
-            switch (response.Type)
+            switch (response)
             {
-                case ResponseType.NEW_MESSAGE:
+                case NewMessageResponse newMessageResponse:
                     {
-                        // Show a newly published message from the broker
-                        var message = (response as NewMessageResponse<string>).Message;
-
-                        var logText = $"[New Message: \"{message.Content}\"";
-
+                        var logText = $"[New Message: \"{newMessageResponse.Message}\"";
                         _logCallback?.Invoke(logText);
-
                         break;
                     }
 
-                case ResponseType.LIST_TOPICS:
+                case ListTopicsResponse listTopicsResponse:
                     {
                         // Cache the topic list and show the list of topics
-                        TopicCache = (response as ListTopicsResponse).Topics;
+                        TopicCache = listTopicsResponse.Topics.ToList();
 
                         _logCallback?.Invoke($"[Topic List]");
                         int index = 0;
@@ -96,45 +91,40 @@ namespace MessageBroker.Client
                         break;
                     }
 
-                case ResponseType.SUBSCRIBED:
+                case SubscribedResponse subscribedResponse:
                     {
                         // Add the new topic to the list of owned topics
-                        var subscriptions = (response as SubscribedResponse).Subscriptions.Select(s => s.Name);
+                        var subscriptions = subscribedResponse.Subscriptions.Select(s => s.Name);
 
                         _logCallback?.Invoke($"Subscribe success");
                         subscriptions.ToList().ForEach(s => _logCallback?.Invoke($"[Current subscriptions \"{s}\" has been created]"));
                         break;
                     }
 
-                case ResponseType.UNSUBSCRIBED:
+                case UnSubscribedResponse unsubscribedResponse:
                     {
                         // Add the new topic to the list of owned topics
-                        var subscriptions = (response as SubscribedResponse).Subscriptions.Select(s => s.Name);
+                        var subscriptions = unsubscribedResponse.Subscriptions.Select(s => s.Name);
 
                         _logCallback?.Invoke($"Unsubscribe success");
                         subscriptions.ToList().ForEach(s => _logCallback?.Invoke($"[Current subscriptions \"{s}\" has been created]"));
                         break;
                     }
 
-                case ResponseType.TOPIC_CREATED:
+                case TopicCreatedResponse topicCreatedResponse:
                     {
                         // Add the new topic to the list of owned topics
-                        var topicInfo = (response as TopicCreatedResponse).TopicInfo;
+                        var topicInfo = topicCreatedResponse.TopicInfo;
                         TopicCache.Add(topicInfo);
 
                         _logCallback?.Invoke($"[Topic \"{topicInfo.Name}\" has been created]");
                         break;
                     }
 
-                case ResponseType.INFO:
-                    _logCallback?.Invoke($"[Info] {(response as InfoResponse).Text}");
+                case InfoResponse infoResponse:
+                    _logCallback?.Invoke($"[Info] {infoResponse.Text}");
                     break;
             }
-        }
-
-        private void AddRequest(Request request)
-        {
-            pendingRequests.Enqueue(request);
         }
 
         public async void MakeCreateTopicRequest(string topicName)
@@ -155,38 +145,27 @@ namespace MessageBroker.Client
 
         public async void MakeUnsubscriptionRequest(string topicName)
         {
-            //AddRequest(new UnsubscribeRequest(new NameIdPair(topicName, ID), topicName));
+            var request = new UnsubscribeRequest(topicName);
+            var buffer = SerializeRequest(request);
+
+            await WebSocket.SendAsync(buffer, WebSocketMessageType.Text, true, disposalTokenSource.Token);
         }
 
         public async void MakeListTopicsRequest()
         {
-            AddRequest(new ListTopicsRequest());
+            var request = new ListTopicsRequest();
+            var buffer = SerializeRequest(request);
+
+            await WebSocket.SendAsync(buffer, WebSocketMessageType.Text, true, disposalTokenSource.Token);
         }
 
-        public async void MakePublishRequest<T>(T messageContent)
+        public async void MakePublishRequest(string messageContent)
         {
-            //var message = new Message<T>
-            //{
-            //    Timestamp = DateTime.UtcNow,
-            //    PublisherInfo = new NameIdPair(Name, ID),
-            //    Content = messageContent
-            //};
+            var request = new PublishRequest(messageContent);
+            var buffer = SerializeRequest(request);
 
-            //AddRequest(new PublishRequest<T>(message));
+            await WebSocket.SendAsync(buffer, WebSocketMessageType.Text, true, disposalTokenSource.Token);
         }
-
-        //public Guid FindTopicID(string name)
-        //{
-        //    Guid found = Guid.Empty;
-        //    int index = 0;
-        //    while (found == Guid.Empty && index < TopicCache.Count)
-        //    {
-        //        if (TopicCache[index].Name == name)
-        //            found = TopicCache[index].ID;
-        //        index++;
-        //    }
-        //    return found;
-        //}
 
         private static ArraySegment<byte> SerializeRequest(Request request)
         {

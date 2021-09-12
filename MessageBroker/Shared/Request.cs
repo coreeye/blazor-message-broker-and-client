@@ -5,9 +5,8 @@ namespace MessageBroker.Shared
     public enum RequestType { SUBSCRIBE, UNSUBSCRIBE, PUBLISH, CREATE_TOPIC, LIST_TOPICS }
 
     [Serializable]
-    public class Request
+    public class Request : ModelBase
     {
-        public RequestType Type { get; set; }
     }
 
     [Serializable]
@@ -17,7 +16,6 @@ namespace MessageBroker.Shared
 
         public SubscribeRequest(string topicName)
         {
-            Type = RequestType.SUBSCRIBE;
             TopicName = topicName;
         }
     }
@@ -29,19 +27,17 @@ namespace MessageBroker.Shared
 
         public UnsubscribeRequest(string topicName)
         {
-            Type = RequestType.UNSUBSCRIBE;
             TopicName = topicName;
         }
     }
 
     [Serializable]
-    public class PublishRequest<T> : Request
+    public class PublishRequest : Request
     {
-        public Message<T> Message { get; set; }
+        public string Message { get; set; }
 
-        public PublishRequest(Message<T> message)
+        public PublishRequest(string message)
         {
-            Type = RequestType.PUBLISH;
             Message = message;
         }
     }
@@ -53,7 +49,6 @@ namespace MessageBroker.Shared
 
         public CreateTopicRequest(string name)
         {
-            Type = RequestType.CREATE_TOPIC;
             TopicName = name;
         }
     }
@@ -63,7 +58,6 @@ namespace MessageBroker.Shared
     {
         public ListTopicsRequest()
         {
-            Type = RequestType.LIST_TOPICS;
         }
     }
 }

@@ -18,6 +18,6 @@ namespace MessageBroker.Client
 
         void MakeUnsubscriptionRequest(string topicName);
 
-        void MakePublishRequest<T>(T messageContent);
+        void MakePublishRequest(string messageContent);
     }
 }

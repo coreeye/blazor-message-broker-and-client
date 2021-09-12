@@ -1,4 +1,4 @@
-using MessageBroker.Networking;
+using MessageBroker.Server.Networking;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -44,9 +44,8 @@ namespace MessageBroker.Server
 
             app.MapWebSocketManager("/ws", serviceProvider.GetService<BrokerServer>());
 
+            app.UseDefaultFiles();
             app.UseStaticFiles();
-
-            app.UseRouting();
         }
     }
 }

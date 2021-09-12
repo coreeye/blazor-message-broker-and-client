@@ -96,10 +96,12 @@
     private void OnConnect()
     {
         ClientStatus = _client.WebSocket.State.ToString();
+        WriteLog($"Connection status is updated to \"{ClientStatus}\"");
+        _client.MakeListTopicsRequest();
         StateHasChanged();
     }
 
-    private async void WriteLog(string msg)
+    private void WriteLog(string msg)
     {
         InvokeAsync(() =>
         {

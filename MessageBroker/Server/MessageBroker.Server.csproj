@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Client\MessageBroker.Client.csproj" />
+    <ProjectReference Include="..\Networking\MessageBroker.Server.Networking.csproj" />
   </ItemGroup>
 
 
