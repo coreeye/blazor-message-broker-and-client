@@ -19,13 +19,13 @@ namespace MessageBroker.Server
 
         protected ConcurrentDictionary<Guid, ConcurrentQueue<Response>> _responseQueues;
 
-        private readonly IModelSerialization serialization;
+        private readonly IModelSerialization _serialization;
 
         public BrokerServer(IConnectionManager webSocketConnectionManager, IModelSerialization serialization) : base(webSocketConnectionManager)
         {
             _topics = new ConcurrentDictionary<Guid, Topic>();
             _responseQueues = new ConcurrentDictionary<Guid, ConcurrentQueue<Response>>();
-            this.serialization = serialization;
+            _serialization = serialization;
         }
 
         public override async Task OnConnected(WebSocket socket)
@@ -36,8 +36,7 @@ namespace MessageBroker.Server
         public override async Task ReceiveAsync(WebSocket socket, WebSocketReceiveResult result, byte[] buffer)
         {
             var socketId = WebSocketConnectionManager.GetId(socket);
-            var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
-            var request = serialization.DeserializeModel<Request>(message);
+            var request = _serialization.DeserializeModel<Request>(buffer, result.Count);
 
             var response = ProcessRequest(request, socketId);
             await SendMessageAsync(socket, response);

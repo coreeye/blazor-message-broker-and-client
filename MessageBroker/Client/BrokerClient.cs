@@ -59,9 +59,7 @@ namespace MessageBroker.Client
                 // check the received.EndOfMessage and consider buffering the blocks until that property is true.
                 // Or use a higher-level library such as SignalR.
                 var received = await WebSocket.ReceiveAsync(buffer, _disposalTokenSource.Token);
-                var message = Encoding.UTF8.GetString(buffer.Array, 0, received.Count);
-
-                var response = _serialization.DeserializeModel<Response>(message);
+                var response = _serialization.DeserializeModel<Response>(buffer.Array, received.Count);
                 ProcessResponse(response);
             }
         }

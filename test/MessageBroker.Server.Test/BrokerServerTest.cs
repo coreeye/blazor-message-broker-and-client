@@ -1,6 +1,7 @@
 using MessageBroker.Server.Networking;
 using Moq;
 using NUnit.Framework;
+using System.Net.WebSockets;
 
 namespace MessageBroker.Server.Test
 {
@@ -22,6 +23,11 @@ namespace MessageBroker.Server.Test
         [Test]
         public void ShouldCreateTopicAfterCreateTopicCall()
         {
+            var socketMock = new Mock<WebSocket>();
+            var webSocketReceiveResult = new Mock<WebSocketReceiveResult>();
+
+            _brokerServer.ReceiveAsync(socketMock.Object, webSocketReceiveResult.Object, null);
+            Assert.IsTrue(true);
         }
     }
 }

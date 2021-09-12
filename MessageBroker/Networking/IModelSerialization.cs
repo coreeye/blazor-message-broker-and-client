@@ -4,7 +4,7 @@ namespace MessageBroker.Server.Networking
 {
     public interface IModelSerialization
     {
-        TModel DeserializeModel<TModel>(string modelString)
+        TModel DeserializeModel<TModel>(byte[] bytes, int count)
                where TModel : ModelBase;
     }
 }
