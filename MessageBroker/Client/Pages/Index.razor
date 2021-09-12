@@ -1,0 +1,110 @@
+﻿@page "/"
+@using System.Net.WebSockets
+@using System.Text
+@using System.Threading
+@using Newtonsoft.Json;
+@using MessageBroker.Shared
+@inject IBrokerClient brokerClient
+
+<div class="container">
+    Welcome to Message Broker Client.<br />
+    <br /> Client connection status : @ClientStatus
+    <br />
+    <br />
+</div>
+
+
+<div id="ConnectionContainer" class="container">
+    <label>Web Socket :</label>
+    <button class="btn btn-primary" @onclick="ConnectBtn_Clicked">Connect</button>
+</div>
+<br />
+<div id="CreateTopicContainer" class="container">
+    <label>Topic to create:</label>
+    <input type="text" @bind="TopicToCreate" class="form-control" aria-label="Default" placeholder="Topic to create..." />
+    <button class="btn btn-primary" @onclick="CreateTopicBtn_Clicked">Publish</button>
+</div>
+<br />
+<div id="TopicContainer" class="container">
+    <label>Subscribe/Unsubscribe:</label>
+    <input type="text" @bind="SubscriptionTopic" class="form-control" aria-label="Default" placeholder="Topic of subscription" />
+    <button class="btn btn-success" @onclick="SubscribeBtn_Clicked">Subscribe</button>
+    <button class="btn btn-danger" @onclick="UnsubscribeBtn_Clicked">Unsubscribe</button>
+</div>
+<br />
+<div id="PublishContainer" class="container">
+    <label>Message:</label>
+    <input type="text" @bind="Message" class="form-control" aria-label="Default" placeholder="Message to send..." />
+    <button class="btn btn-primary" @onclick="PublishBtn_Clicked">Publish</button>
+</div>
+<br />
+<div id="MessageContainer" class="container">
+    <h3>Message board</h3>
+    <table class="table">
+        <tbody>
+            @foreach (var MQMsg in MQMessage)
+            {
+                <tr>
+                    <td>@MQMsg</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+
+    private IBrokerClient _client;
+    private string TopicToCreate { get; set; }
+    private string SubscriptionTopic { get; set; }
+    private string Message { get; set; }
+    private string ClientStatus { get; set; } = "None";
+    System.Collections.ObjectModel.ObservableCollection<MarkupString> MQMessage = new System.Collections.ObjectModel.ObservableCollection<MarkupString>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _client = new BrokerClient();
+    }
+
+    private void ConnectBtn_Clicked()
+    {
+        _client.Connect(new Uri("wss://localhost:5001/ws"), OnConnect, WriteLog);
+        ClientStatus = _client.WebSocket.State.ToString();
+        StateHasChanged();
+    }
+
+    private void CreateTopicBtn_Clicked()
+    {
+        _client.MakeCreateTopicRequest(TopicToCreate);
+    }
+
+    private void SubscribeBtn_Clicked()
+    {
+        _client.MakeSubscriptionRequest(SubscriptionTopic);
+    }
+
+    private void UnsubscribeBtn_Clicked()
+    {
+        _client.MakeUnsubscriptionRequest(SubscriptionTopic);
+    }
+
+    private void PublishBtn_Clicked()
+    {
+        _client.MakePublishRequest(Message);
+    }
+
+    private void OnConnect()
+    {
+        ClientStatus = _client.WebSocket.State.ToString();
+        StateHasChanged();
+    }
+
+    private async void WriteLog(string msg)
+    {
+        InvokeAsync(() =>
+        {
+            MQMessage.Insert(0, (MarkupString)msg.Replace(Environment.NewLine, "<br/>"));
+            StateHasChanged();
+        });
+    }
+}
