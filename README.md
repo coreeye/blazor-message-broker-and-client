@@ -1,2 +1,4 @@
 # SimpleMessageBrokerAndClient
-Very simple .net core server and client example to act as a message broker and client in a publish-subscribe system
+This application demonstrates the use of Web sockets to create a Blazor broker/client application.
+
+[Koray Elbek](https://www.linkedin.com/in/korayelbek/)
