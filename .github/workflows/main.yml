@@ -22,7 +22,7 @@ jobs:
       
       # publishes Blazor project to the release-folder
       - name: Publish .NET Core Project
-        run: dotnet MessageBroker/Server/MessageBroker.Server.csproj -c Release -o release --nologo
+        run: dotnet .\MessageBroker\Server\MessageBroker.Server.csproj -c Release -o release --nologo
     
       - name: Commit wwwroot to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@4.1.5
