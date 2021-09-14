@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System.Threading.Tasks;
 
 namespace MessageBroker.Server
 {
@@ -49,13 +48,13 @@ namespace MessageBroker.Server
 
             app.MapWebSocketManager("/ws", serviceProvider.GetService<BrokerServer>());
 
-            app.UseDefaultFiles();
             app.UseStaticFiles();
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapFallbackToPage("/index.html");
+                endpoints.MapRazorPages();
+                endpoints.MapFallbackToFile("", "main.html");
             });
         }
     }
